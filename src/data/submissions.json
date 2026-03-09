@@ -1,0 +1,125 @@
+[
+  {
+    "fullName": "Verification User",
+    "email": "verify@example.com",
+    "phoneNumber": "+254 711 222 333",
+    "personalAllergies": [
+      "Dairy"
+    ],
+    "childCount": "1",
+    "childAgeRanges": [
+      "6 - 9"
+    ],
+    "childAllergies": {
+      "Dairy": [
+        "6 - 9"
+      ]
+    },
+    "confirmDetails": true,
+    "consent": true,
+    "timestamp": "2026-03-09T13:18:23.176Z",
+    "id": "jap195o81"
+  },
+  {
+    "fullName": "Verification UserTest User",
+    "email": "verify@example.comtest@example.com",
+    "phoneNumber": "+254 711 222 333+254 711 222 333",
+    "personalAllergies": [
+      "Dairy"
+    ],
+    "childCount": "1",
+    "childAgeRanges": [
+      "6 - 9"
+    ],
+    "childAllergies": {
+      "Dairy": [
+        "6 - 9"
+      ]
+    },
+    "confirmDetails": true,
+    "consent": true,
+    "timestamp": "2026-03-09T13:22:21.633Z",
+    "id": "5bwenumva"
+  },
+  {
+    "fullName": "API Test User",
+    "email": "api@test.com",
+    "phoneNumber": "123456",
+    "foodPreference": [
+      "Vegetarian"
+    ],
+    "childCount": "2",
+    "childAgeRanges": [
+      "6 - 9"
+    ],
+    "childAllergies": [
+      {
+        "allergy": "Dairy",
+        "ageBracket": "6 - 9",
+        "childCount": "1"
+      }
+    ],
+    "confirmDetails": true,
+    "consent": true,
+    "timestamp": "2026-03-09T13:53:15.709Z",
+    "id": "w8gxkn1d1"
+  },
+  {
+    "fullName": "Elisha Papa",
+    "email": "elishaseme99@gmail.com",
+    "phoneNumber": "0791007848",
+    "personalAllergies": [
+      "Dairy"
+    ],
+    "foodPreference": [
+      "Vegetarian"
+    ],
+    "childCount": "2",
+    "childAgeRanges": [
+      "14 - 18",
+      "10 - 13"
+    ],
+    "childAllergies": [
+      {
+        "allergy": "Dairy",
+        "ageBracket": "6 - 9",
+        "childCount": "1"
+      },
+      {
+        "allergy": "Nut",
+        "ageBracket": "10 - 13",
+        "childCount": "1"
+      }
+    ],
+    "confirmDetails": true,
+    "consent": true,
+    "timestamp": "2026-03-09T14:01:52.231Z",
+    "id": "pnd9zfj45"
+  },
+  {
+    "fullName": "John Doe",
+    "email": "john@example.com",
+    "phoneNumber": "1234567890",
+    "personalAllergies": [
+      "Dairy"
+    ],
+    "foodPreference": [
+      "Non-Vegetarian"
+    ],
+    "childCount": "1",
+    "childAgeRanges": [
+      "6 - 9"
+    ],
+    "childAllergies": [
+      {
+        "allergy": "Dairy",
+        "ageBracket": "6 - 9",
+        "childCount": "1"
+      }
+    ],
+    "confirmDetails": true,
+    "consent": true,
+    "timestamp": "2026-03-09T14:02:29.350Z",
+    "id": "4w449ptrj"
+  }
+]
