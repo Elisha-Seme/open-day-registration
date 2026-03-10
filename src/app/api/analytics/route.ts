@@ -1,19 +1,14 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { Redis } from '@upstash/redis';
 
-const DATA_PATH = path.join(process.cwd(), "src/data/submissions.json");
+const redis = new Redis({
+    url: process.env.KV_REST_API_URL!,
+    token: process.env.KV_REST_API_TOKEN!,
+});
 
 export async function GET() {
     try {
-        let submissions: any[] = [];
-        try {
-            const fileContent = fs.readFileSync(DATA_PATH, "utf-8");
-            submissions = JSON.parse(fileContent);
-        } catch (readError: any) {
-            // Ignore error if file doesn't exist, else rethrow
-            if (readError.code !== 'ENOENT') throw readError;
-        }
+        const submissions: any[] = await redis.get('submissions') || [];
 
         // Aggregate data for charts
         const stats = {

@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { Redis } from '@upstash/redis';
 
-const DATA_DIR = path.join(process.cwd(), "src/data");
-const DATA_PATH = path.join(DATA_DIR, "submissions.json");
+const redis = new Redis({
+    url: process.env.KV_REST_API_URL!,
+    token: process.env.KV_REST_API_TOKEN!,
+});
 
 export async function POST(req: Request) {
     try {
@@ -11,23 +12,13 @@ export async function POST(req: Request) {
         const timestamp = new Date().toISOString();
         const submission = { ...data, timestamp, id: Math.random().toString(36).substr(2, 9) };
 
-        // Ensure directory exists
-        if (!fs.existsSync(DATA_DIR)) {
-            fs.mkdirSync(DATA_DIR, { recursive: true });
-        }
-
-        let submissions = [];
-        try {
-            const fileContent = fs.readFileSync(DATA_PATH, "utf-8");
-            submissions = JSON.parse(fileContent);
-        } catch (readError: any) {
-            // Ignore error if file doesn't exist, else rethrow
-            if (readError.code !== 'ENOENT') throw readError;
-        }
+        // Fetch existing submissions
+        let submissions: any[] = await redis.get('submissions') || [];
 
         submissions.push(submission);
 
-        fs.writeFileSync(DATA_PATH, JSON.stringify(submissions, null, 2));
+        // Save back to Redis
+        await redis.set('submissions', submissions);
 
         return NextResponse.json({ success: true });
     } catch (error: any) {
