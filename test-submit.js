@@ -7,8 +7,8 @@ async function testSubmit() {
         phoneNumber: "000000",
         personalAllergies: ["Nut"],
         foodPreference: ["Vegetarian"],
-        childCount: "1",
-        childAgeRanges: ["6 - 9"],
+        childCount: "3",
+        childAgeRanges: { "6 - 9": "2", "18+": "1" },
         childAllergies: [
             { allergy: "Nut", ageBracket: "6 - 9", childCount: "1" }
         ],

@@ -4,9 +4,9 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    PieChart, Pie, Cell, Legend
+    PieChart, Pie, Cell, Legend, LabelList
 } from "recharts";
-import { Users, Baby, Activity, ArrowLeft, Loader2, RefreshCcw, Lock, KeyRound, Utensils } from "lucide-react";
+import { Users, Baby, Activity, ArrowLeft, Loader2, RefreshCcw, Lock, KeyRound, Utensils, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +18,7 @@ export default function AnalyticsPage() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [password, setPassword] = useState("");
     const [passError, setPassError] = useState(false);
+    const [isClearing, setIsClearing] = useState(false);
 
     const fetchData = async () => {
         setLoading(true);
@@ -29,6 +30,28 @@ export default function AnalyticsPage() {
             console.error(err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleClearDatabase = async () => {
+        if (!confirm("Are you sure you want to PERMANENTLY delete all registration data? This action cannot be undone.")) {
+            return;
+        }
+
+        setIsClearing(true);
+        try {
+            const res = await fetch("/api/clear-db", { method: 'DELETE' });
+            if (res.ok) {
+                await fetchData(); // Refresh the chart to show empty states
+                alert("Database cleared successfully.");
+            } else {
+                alert("Failed to clear database.");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("An error occurred while clearing the database.");
+        } finally {
+            setIsClearing(false);
         }
     };
 
@@ -118,18 +141,28 @@ export default function AnalyticsPage() {
                     <h1 className="text-4xl font-black tracking-tight text-slate-900 uppercase">Admin <span className="text-primary">Dashboard</span></h1>
                     <p className="text-slate-500 font-medium mt-1 uppercase tracking-tighter text-xs">Manga House Open Day Registration Data</p>
                 </div>
-                <button
-                    onClick={fetchData}
-                    disabled={loading}
-                    className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-lg font-bold text-slate-700 hover:bg-slate-50 active:scale-95 transition-all text-sm shadow-sm"
-                >
-                    <RefreshCcw className={cn("w-4 h-4", loading && "animate-spin")} />
-                    SYNC DATA
-                </button>
+                <div className="flex flex-wrap items-center gap-3">
+                    <button
+                        onClick={handleClearDatabase}
+                        disabled={loading || isClearing}
+                        className="flex items-center gap-2 px-6 py-3 bg-red-50 border border-red-200 rounded-lg font-bold text-red-700 hover:bg-red-100 active:scale-95 transition-all text-sm shadow-sm"
+                    >
+                        {isClearing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                        CLEAR DATABASE
+                    </button>
+                    <button
+                        onClick={fetchData}
+                        disabled={loading}
+                        className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-lg font-bold text-slate-700 hover:bg-slate-50 active:scale-95 transition-all text-sm shadow-sm"
+                    >
+                        <RefreshCcw className={cn("w-4 h-4", loading && "animate-spin")} />
+                        SYNC DATA
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
-                <StatsCard icon={<Users />} title="Registrations" value={data?.totalSubmissions || 0} bgClass="bg-blue-600" />
+                <StatsCard icon={<Users />} title="Adults Registered" value={data?.totalSubmissions || 0} bgClass="bg-blue-600" />
                 <StatsCard icon={<Baby />} title="Children Total" value={data?.totalChildren || 0} bgClass="bg-indigo-600" />
                 <StatsCard icon={<Utensils />} title="Food Opt-ins" value={Object.values(data?.foodPrefs || {}).reduce((a: number, b: any) => a + b, 0) as number} bgClass="bg-orange-500" />
                 <StatsCard icon={<Activity />} title="Allergy Alerts" value={Object.values(data?.allergies || {}).reduce((a: number, b: any) => a + b, 0) as number} bgClass="bg-emerald-600" />
@@ -141,7 +174,7 @@ export default function AnalyticsPage() {
                     <div className="h-[250px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
-                                <Pie data={foodData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} dataKey="value">
+                                <Pie data={foodData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} dataKey="value" label={true}>
                                     {foodData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
@@ -162,7 +195,9 @@ export default function AnalyticsPage() {
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 800 }} />
                                 <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 800 }} />
                                 <Tooltip cursor={{ fill: '#f8fafc' }} />
-                                <Bar dataKey="value" fill="#10b981" radius={[4, 4, 0, 0]} barSize={40} />
+                                <Bar dataKey="value" fill="#10b981" radius={[4, 4, 0, 0]} barSize={40}>
+                                    <LabelList dataKey="value" position="top" style={{ fontSize: '10px', fontWeight: 'bold', fill: '#64748b' }} />
+                                </Bar>
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -195,10 +230,18 @@ export default function AnalyticsPage() {
                                                     {p}
                                                 </span>
                                             ))}
-                                            {s.childAgeRanges?.length > 0 && (
-                                                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[9px] font-black uppercase tracking-tighter border border-blue-200">
-                                                    {s.childAgeRanges.join(", ")} Ages
-                                                </span>
+                                            {s.childAgeRanges && Array.isArray(s.childAgeRanges) ? (
+                                                s.childAgeRanges.length > 0 && (
+                                                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[9px] font-black uppercase tracking-tighter border border-blue-200">
+                                                        {s.childAgeRanges.join(", ")} Ages
+                                                    </span>
+                                                )
+                                            ) : (
+                                                s.childAgeRanges && Object.entries(s.childAgeRanges).map(([range, count]: any) => parseInt(count) > 0 ? (
+                                                    <span key={range} className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[9px] font-black uppercase tracking-tighter border border-blue-200">
+                                                        {count}x {range}
+                                                    </span>
+                                                ) : null)
                                             )}
                                         </div>
                                     </td>

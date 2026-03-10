@@ -30,10 +30,9 @@ export default function RegistrationPage() {
     personalAllergies: [] as string[],
     foodPreference: [] as string[],
     childCount: "1",
-    childAgeRanges: [] as string[],
+    childAgeRanges: {} as Record<string, string>,
     childAllergies: [] as { allergy: string; ageBracket: string; childCount: string }[],
     confirmDetails: false,
-    consent: false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -68,6 +67,18 @@ export default function RegistrationPage() {
       ? current.filter((i) => i !== item)
       : [...current, item];
     updateFormData(String(field), newValue);
+  };
+
+  const updateChildAgeRange = (range: string, count: string) => {
+    setFormData((prev) => {
+      const newRanges = { ...prev.childAgeRanges };
+      if (count === "" || count === "0") {
+        delete newRanges[range];
+      } else {
+        newRanges[range] = count;
+      }
+      return { ...prev, childAgeRanges: newRanges };
+    });
   };
 
   if (isSuccess) {
@@ -229,26 +240,34 @@ export default function RegistrationPage() {
 
             <div className="space-y-3">
               <label className="text-sm font-semibold text-slate-700">What age range do your children fall into?</label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {AGE_RANGES.map((range) => (
-                  <label
-                    key={range}
-                    className={cn(
-                      "flex items-center justify-center p-3 rounded-lg border transition-all cursor-pointer text-center text-sm font-bold shadow-sm",
-                      formData.childAgeRanges.includes(range)
-                        ? "border-primary bg-primary text-white"
-                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                    )}
-                  >
-                    <input
-                      type="checkbox"
-                      className="hidden"
-                      checked={formData.childAgeRanges.includes(range)}
-                      onChange={() => toggleArrayItem("childAgeRanges", range)}
-                    />
-                    {range}
-                  </label>
-                ))}
+              <div className="border rounded-xl border-slate-200 shadow-sm overflow-hidden">
+                <table className="w-full text-sm border-collapse bg-white">
+                  <thead>
+                    <tr>
+                      <th className="p-3 text-left bg-slate-50 font-bold text-slate-700 border-b border-slate-200 uppercase tracking-wider text-[10px]">Age Category</th>
+                      <th className="p-3 text-left bg-slate-50 font-bold text-slate-700 border-b border-slate-200 uppercase tracking-wider text-[10px]">No. of Children</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {AGE_RANGES.map((range) => (
+                      <tr key={range} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+                        <td className="p-3 font-bold text-slate-900 border-r border-slate-100">{range}</td>
+                        <td className="p-2">
+                          <select
+                            className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:outline-none transition-all"
+                            value={formData.childAgeRanges[range] || ""}
+                            onChange={(e) => updateChildAgeRange(range, e.target.value)}
+                          >
+                            <option value="">0</option>
+                            {[1, 2, 3, 4, 5].map((n) => (
+                              <option key={n} value={n.toString()}>{n}</option>
+                            ))}
+                          </select>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
 
@@ -265,34 +284,26 @@ export default function RegistrationPage() {
           </div>
         </FormSection>
 
-        <FormSection title="Final Confirmation">
-          <div className="space-y-4">
-            <label className="flex items-start gap-3 p-4 rounded-lg bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
-              <input
-                type="checkbox"
-                required
-                className="mt-1 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
-                checked={formData.confirmDetails}
-                onChange={(e) => updateFormData("confirmDetails", e.target.checked)}
-              />
-              <span className="text-sm text-slate-700 font-medium leading-relaxed">
-                I confirm that the details provided are accurate <span className="text-red-500 font-bold">*</span>
-              </span>
-            </label>
+        <label className="flex items-start gap-3 p-4 rounded-lg bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
+          <input
+            type="checkbox"
+            required
+            className="mt-1 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
+            checked={formData.confirmDetails}
+            onChange={(e) => updateFormData("confirmDetails", e.target.checked)}
+          />
+          <span className="text-sm text-slate-700 font-medium leading-relaxed">
+            I confirm that the details provided are accurate <span className="text-red-500 font-bold">*</span>
+          </span>
+        </label>
 
-            <label className="flex items-start gap-3 p-4 rounded-lg bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
-              <input
-                type="checkbox"
-                className="mt-1 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
-                checked={formData.consent}
-                onChange={(e) => updateFormData("consent", e.target.checked)}
-              />
-              <span className="text-sm text-slate-700 font-medium leading-relaxed">
-                By accepting, you give consent to participate in the event.
-              </span>
-            </label>
-          </div>
-        </FormSection>
+        <div className="p-4 rounded-lg bg-blue-50/50 border border-blue-100 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+          <p className="text-sm text-blue-800 font-medium leading-relaxed">
+            <strong className="font-black uppercase tracking-tight text-[10px] block mb-1 text-blue-600">Note</strong>
+            By accepting to attend, you give us consent to use photos and videos taken during the event for limited media use.
+          </p>
+        </div>
 
         {error && (
           <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 flex items-center gap-3">

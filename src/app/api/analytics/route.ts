@@ -31,10 +31,21 @@ export async function GET() {
                 stats.allergies[a] = (stats.allergies[a] || 0) + 1;
             });
 
-            // 3. Child demographics (from age range checkboxes)
-            s.childAgeRanges?.forEach((r: string) => {
-                stats.ageRanges[r] = (stats.ageRanges[r] || 0) + 1;
-            });
+            // 3. Child demographics (from age range dropdowns or legacy checkboxes)
+            if (Array.isArray(s.childAgeRanges)) {
+                // Legacy support
+                s.childAgeRanges.forEach((r: string) => {
+                    stats.ageRanges[r] = (stats.ageRanges[r] || 0) + 1;
+                });
+            } else if (s.childAgeRanges && typeof s.childAgeRanges === 'object') {
+                // New format: { "6 - 9": "2", "18+": "1" }
+                Object.entries(s.childAgeRanges).forEach(([range, count]: [string, any]) => {
+                    const parsedCount = parseInt(count) || 0;
+                    if (parsedCount > 0) {
+                        stats.ageRanges[range] = (stats.ageRanges[range] || 0) + parsedCount;
+                    }
+                });
+            }
 
             // 4. Detailed child allergies (from the new table)
             // Handle legacy data where childAllergies was an object
