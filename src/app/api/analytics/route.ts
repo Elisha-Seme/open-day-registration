@@ -1,13 +1,19 @@
 import { NextResponse } from "next/server";
-import fs from "fs/promises";
+import fs from "fs";
 import path from "path";
 
 const DATA_PATH = path.join(process.cwd(), "src/data/submissions.json");
 
 export async function GET() {
     try {
-        const fileContent = await fs.readFile(DATA_PATH, "utf-8");
-        const submissions = JSON.parse(fileContent);
+        let submissions: any[] = [];
+        try {
+            const fileContent = fs.readFileSync(DATA_PATH, "utf-8");
+            submissions = JSON.parse(fileContent);
+        } catch (readError: any) {
+            // Ignore error if file doesn't exist, else rethrow
+            if (readError.code !== 'ENOENT') throw readError;
+        }
 
         // Aggregate data for charts
         const stats = {
@@ -36,14 +42,22 @@ export async function GET() {
             });
 
             // 4. Detailed child allergies (from the new table)
-            // We'll add these to the main allergies count for total visibility
-            s.childAllergies?.forEach((ca: any) => {
-                if (ca.allergy && ca.childCount && ca.ageBracket) {
-                    const count = parseInt(ca.childCount) || 1;
-                    stats.allergies[ca.allergy] = (stats.allergies[ca.allergy] || 0) + count;
-                    // You could also track stats by ageBracket here if needed
-                }
-            });
+            // Handle legacy data where childAllergies was an object
+            if (Array.isArray(s.childAllergies)) {
+                s.childAllergies.forEach((ca: any) => {
+                    if (ca.allergy) {
+                        const count = parseInt(ca.childCount) || 1;
+                        stats.allergies[ca.allergy] = (stats.allergies[ca.allergy] || 0) + count;
+                    }
+                });
+            } else if (s.childAllergies && typeof s.childAllergies === 'object') {
+                // Legacy support for the old object format if needed
+                Object.entries(s.childAllergies).forEach(([allergy, ages]: any) => {
+                    if (Array.isArray(ages)) {
+                        stats.allergies[allergy] = (stats.allergies[allergy] || 0) + ages.length;
+                    }
+                });
+            }
         });
 
         return NextResponse.json(stats);
