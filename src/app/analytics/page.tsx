@@ -212,7 +212,7 @@ export default function AnalyticsPage() {
                             <tr className="border-b border-slate-100">
                                 <th className="pb-4 font-black text-slate-400 uppercase tracking-tighter">Attendee</th>
                                 <th className="pb-4 font-black text-slate-400 uppercase tracking-tighter">Preference</th>
-                                <th className="pb-4 font-black text-slate-400 uppercase tracking-tighter">Status</th>
+                                <th className="pb-4 font-black text-slate-400 uppercase tracking-tighter">Children Attending</th>
                                 <th className="pb-4 font-black text-slate-400 uppercase tracking-tighter text-right">Registered At</th>
                             </tr>
                         </thead>
